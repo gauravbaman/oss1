@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload to MEGA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+        }
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+        progress {
+            width: 100%;
+            height: 20px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload File to MEGA</h1>
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" id="file-input" name="file" required>
+            <button type="submit">Upload</button>
+        </form>
+        <progress id="upload-progress" value="0" max="100"></progress>
+        <p id="message"></p>
+    </div>
+
+    <script>
+        const form = document.getElementById('upload-form');
+        const progress = document.getElementById('upload-progress');
+        const message = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const file = document.getElementById('file-input').files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/.netlify/functions/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('File upload failed.');
+                }
+
+                const result = await response.json();
+                message.textContent = result.message;
+                progress.value = 100;
+            } catch (error) {
+                message.textContent = error.message;
+                progress.value = 0;
+            }
+        });
+    </script>
+</body>
+</html>
+
