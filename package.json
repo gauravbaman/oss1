@@ -1,0 +1,13 @@
+{
+  "name": "my-upload-site",
+  "version": "1.0.0",
+  "description": "A simple file upload website with progress bar.",
+  "main": "server.js",
+  "scripts": {
+    "start": "netlify dev"
+  },
+  "dependencies": {
+    "multiparty": "^4.2.2"
+  }
+}
+
