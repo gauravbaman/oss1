@@ -1,11 +1,30 @@
+const axios = require('axios');
+const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
-const { Buffer } = require('buffer');
-const mega = require('mega');
 
 // MEGA credentials from environment variables
 const MEGA_EMAIL = process.env.MEGA_EMAIL;
 const MEGA_PASSWORD = process.env.MEGA_PASSWORD;
+
+async function uploadToMega(filePath) {
+  const form = new FormData();
+  form.append('file', fs.createReadStream(filePath));
+
+  try {
+    const response = await axios.post('https://api.mega.nz/upload', form, {
+      headers: {
+        ...form.getHeaders(),
+        'Authorization': `Bearer ${process.env.MEGA_ACCESS_TOKEN}`
+      }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Upload error:', error);
+    throw new Error('Upload failed');
+  }
+}
 
 exports.handler = async function (event) {
   try {
@@ -50,21 +69,11 @@ exports.handler = async function (event) {
     const filePath = path.join('/tmp', 'uploaded-file.zip');
     fs.writeFileSync(filePath, fileData);
 
-    const client = mega({ email: MEGA_EMAIL, password: MEGA_PASSWORD });
-
-    await new Promise((resolve, reject) => {
-      client.upload(filePath, 'UploadedFiles', (error, file) => {
-        if (error) {
-          console.error('Upload error:', error);
-          return reject(error);
-        }
-        resolve(file);
-      });
-    });
+    const uploadResult = await uploadToMega(filePath);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'File uploaded successfully to MEGA!' }),
+      body: JSON.stringify({ message: 'File uploaded successfully to MEGA!', uploadResult }),
     };
   } catch (error) {
     console.error('Error during file upload:', error);
