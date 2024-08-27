@@ -7,7 +7,7 @@
     "start": "netlify dev"
   },
   "dependencies": {
-    "mega": "^1.2.0",
+    "mega": "^0.3.0",
     "multiparty": "^4.2.2"
   }
 }
