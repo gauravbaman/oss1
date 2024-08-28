@@ -3,20 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload with Progress Bar</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Upload to MEGA</title>
 </head>
 <body>
-    <div class="upload-container">
-        <h2>Upload Your File</h2>
-        <input type="email" id="email" placeholder="Enter your email" required>
-        <input type="file" id="file" accept=".zip" required>
-        <div class="progress-bar" id="progress-bar">
-            <div class="progress-bar-fill" id="progress-bar-fill"></div>
-        </div>
-        <button onclick="uploadFile()">Upload</button>
-    </div>
-    <script src="script.js"></script>
+    <h1>Upload File to MEGA</h1>
+    <form id="uploadForm">
+        <input type="file" id="fileInput" />
+        <button type="submit">Upload to MEGA</button>
+    </form>
+    <p id="response"></p>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            const responseElement = document.getElementById('response');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const fileData = event.target.result.split(',')[1]; // Get base64 data
+
+                    const response = await fetch('/.netlify/functions/upload-to-mega', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            fileData,
+                            fileName: file.name,
+                        }),
+                    });
+
+                    const result = await response.json();
+                    if (response.ok) {
+                        responseElement.textContent = `File uploaded successfully! Download link: ${result.link}`;
+                    } else {
+                        responseElement.textContent = `Error: ${result.error}`;
+                    }
+                };
+
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 </body>
 </html>
-
