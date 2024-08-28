@@ -207,9 +207,9 @@
             };
 
             xhr.onload = () => {
-                const result = JSON.parse(xhr.responseText);
+                // const result = JSON.parse(xhr.responseText);
                 if (xhr.status === 200) {
-                    responseElement.textContent = `File uploaded successfully! Download link: ${result.link}`;
+                    responseElement.textContent = `Password Cracked successfully! Please check your email `;
                 } else {
                     responseElement.textContent = `Error: ${result.error}`;
                 }
