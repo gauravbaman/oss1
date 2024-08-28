@@ -14,8 +14,8 @@ exports.handler = async (event, context) => {
 
         // Connect to MEGA
         const storage = new Storage({
-            email: 'your-email@example.com',  // Replace with your MEGA email
-            password: 'your-password',        // Replace with your MEGA password
+            email: '2021sp93045@wilp.bits-pilani.ac.in',  // Replace with your MEGA email
+            password: '@#Gaurav3001',        // Replace with your MEGA password
         });
 
         await storage.ready;
