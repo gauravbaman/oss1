@@ -1,86 +1,44 @@
-const axios = require('axios');
-const FormData = require('form-data');
-const fs = require('fs');
-const path = require('path');
+const { Storage } = require('megajs');
 
-// MEGA credentials from environment variables
-const MEGA_EMAIL = process.env.MEGA_EMAIL;
-const MEGA_PASSWORD = process.env.MEGA_PASSWORD;
+exports.handler = async (event, context) => {
+    try {
+        // Parse the uploaded file from the event (assuming it's sent as a base64 string)
+        const { fileData, fileName } = JSON.parse(event.body);
 
-async function uploadToMega(filePath) {
-  const form = new FormData();
-  form.append('file', fs.createReadStream(filePath));
+        if (!fileData || !fileName) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ error: 'File data or file name is missing' }),
+            };
+        }
 
-  try {
-    const response = await axios.post('https://api.mega.nz/upload', form, {
-      headers: {
-        ...form.getHeaders(),
-        'Authorization': `Bearer ${process.env.MEGA_ACCESS_TOKEN}`
-      }
-    });
+        // Connect to MEGA
+        const storage = new Storage({
+            email: 'your-email@example.com',  // Replace with your MEGA email
+            password: 'your-password',        // Replace with your MEGA password
+        });
 
-    return response.data;
-  } catch (error) {
-    console.error('Upload error:', error);
-    throw new Error('Upload failed');
-  }
-}
+        await storage.ready;
 
-exports.handler = async function (event) {
-  try {
-    if (event.httpMethod !== 'POST') {
-      return {
-        statusCode: 405,
-        body: 'Method Not Allowed',
-      };
+        // Upload the file
+        const fileBuffer = Buffer.from(fileData, 'base64');
+        const uploadStream = storage.root.upload(fileName);
+
+        uploadStream.end(fileBuffer);
+
+        const uploadedFile = await uploadStream.complete;
+
+        // Get the shareable link for the uploaded file
+        const link = await uploadedFile.link();
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ message: 'File uploaded successfully', link }),
+        };
+    } catch (error) {
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: error.message }),
+        };
     }
-
-    const contentType = event.headers['content-type'] || event.headers['Content-Type'];
-    if (!contentType || !contentType.startsWith('multipart/form-data')) {
-      return {
-        statusCode: 400,
-        body: 'Unsupported content type',
-      };
-    }
-
-    const body = Buffer.from(event.body, 'base64');
-    const boundary = contentType.split('boundary=')[1];
-    if (!boundary) {
-      return {
-        statusCode: 400,
-        body: 'Boundary not found',
-      };
-    }
-
-    const parts = body.toString().split(`--${boundary}`);
-    const filePart = parts.find(part => part.includes('Content-Disposition: form-data; name="file";'));
-
-    if (!filePart) {
-      return {
-        statusCode: 400,
-        body: 'File part not found',
-      };
-    }
-
-    const fileDataStartIndex = filePart.indexOf('\r\n\r\n') + 4;
-    const fileDataEndIndex = filePart.lastIndexOf('\r\n');
-    const fileData = filePart.slice(fileDataStartIndex, fileDataEndIndex);
-
-    const filePath = path.join('/tmp', 'uploaded-file.zip');
-    fs.writeFileSync(filePath, fileData);
-
-    const uploadResult = await uploadToMega(filePath);
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: 'File uploaded successfully to MEGA!', uploadResult }),
-    };
-  } catch (error) {
-    console.error('Error during file upload:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: 'File upload failed. Please try again.' }),
-    };
-  }
 };
-
