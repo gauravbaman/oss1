@@ -20,9 +20,16 @@ exports.handler = async (event, context) => {
 
         await storage.ready;
 
-        // Upload the file
+        // Convert base64 file data to buffer and get its size
         const fileBuffer = Buffer.from(fileData, 'base64');
-        const uploadStream = storage.root.upload(fileName);
+        const fileSize = fileBuffer.length;
+
+        // Upload the file with specified size or enable buffering
+        const uploadStream = storage.root.upload({
+            name: fileName,
+            size: fileSize,  // Specify the file size here
+            allowUploadBuffering: true,  // Allow buffering
+        });
 
         uploadStream.end(fileBuffer);
 
@@ -41,4 +48,4 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({ error: error.message }),
         };
     }
-};
+}
