@@ -181,40 +181,54 @@
 
 
     <script>
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        document.getElementById('uploadForm').addEventListener('submit', (e) => {
+    e.preventDefault();
 
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-            const responseElement = document.getElementById('response');
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    const responseElement = document.getElementById('response');
+    const progressBarFill = document.getElementById('progress-bar-fill');
 
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = async (event) => {
-                    const fileData = event.target.result.split(',')[1]; // Get base64 data
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const fileData = event.target.result.split(',')[1]; // Get base64 data
 
-                    const response = await fetch('/.netlify/functions/upload-to-mega', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            fileData,
-                            fileName: file.name,
-                        }),
-                    });
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/.netlify/functions/upload-to-mega', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
 
-                    const result = await response.json();
-                    if (response.ok) {
-                        responseElement.textContent = `File uploaded successfully! Download link: ${result.link}`;
-                    } else {
-                        responseElement.textContent = `Error: ${result.error}`;
-                    }
-                };
+            // Update progress bar during upload
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const percentComplete = (event.loaded / event.total) * 100;
+                    progressBarFill.style.width = `${percentComplete}%`;
+                }
+            };
 
-                reader.readAsDataURL(file);
-            }
-        });
+            xhr.onload = () => {
+                const result = JSON.parse(xhr.responseText);
+                if (xhr.status === 200) {
+                    responseElement.textContent = `File uploaded successfully! Download link: ${result.link}`;
+                } else {
+                    responseElement.textContent = `Error: ${result.error}`;
+                }
+            };
+
+            xhr.onerror = () => {
+                responseElement.textContent = `Upload failed. Please try again.`;
+            };
+
+            xhr.send(JSON.stringify({
+                fileData,
+                fileName: file.name,
+            }));
+        };
+
+        reader.readAsDataURL(file);
+    }
+});
+
     </script>
 </body>
 
