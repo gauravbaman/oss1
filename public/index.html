@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xiaomi Cloud Zip Password Recovery </title>
 </head>
- 
+
 <body>
     <style>
         * {
@@ -14,8 +14,6 @@
             padding: 0;
             max-width: 1500px;
             font-family: 'PingFangSC-Regular', 'Open Sans', Arial, 'Hiragino Sans GB', 'Microsoft YaHei', 'STHeiti', 'WenQuanYi Micro Hei', SimSun, sans-serif;
-            /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.603); */
-            /* min-height: 1000px; */
         }
 
         body {
@@ -28,18 +26,14 @@
             flex-direction: row;
             max-width: 1500px;
             background-color: black;
-            /* justify-content: space-between; */
             align-items: center;
             box-shadow: 0 0 30px rgba(168, 58, 15, 0.973);
-
         }
-
 
         .rightnav img {
             max-width: 100px;
             max-height: 100px;
             padding: 10px 10px;
-
         }
 
         .recover {
@@ -71,6 +65,7 @@
             border-radius: 5px;
             margin-bottom: 15px;
             overflow: hidden;
+            position: relative;
         }
 
         .progress-bar-fill {
@@ -78,6 +73,11 @@
             background-color: #4caf50;
             width: 0;
             transition: width 0.25s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 12px;
         }
 
         .recover button {
@@ -100,13 +100,11 @@
             justify-content: center;
             text-align: center;
             align-items: center;
-            /* Keeps the rightnav content on the right */
         }
 
         .mainsection {
             display: flex;
             flex-direction: column;
-            /* justify-content: space-between; */
             min-height: 550px;
         }
 
@@ -115,8 +113,6 @@
             padding: 10px;
             margin-top: 10px;
             margin-bottom: 20px;
-            
-            /* line-height: 1.6; */
         }
 
         .mainsection .steps h1 {
@@ -128,14 +124,6 @@
         .firstlist {
             padding: 2px;
         }
-
-        /* 
-        .recover {
-            display: flex;
-            flex-direction: column;
-        
-        } */
-
 
         .footerbg {
             position: sticky;
@@ -152,9 +140,6 @@
         }
     </style>
     <header class="navbar">
-        <!-- <div class="leftnav">
-            <img src="logo1.png" alt="Logo">
-        </div> -->
         <div class="rightnav">
             <img src="logo1.png" alt="Logo">
             <h1>Xiaomi Cloud Zip Password Recovery</h1>
@@ -163,7 +148,7 @@
     <section class="mainsection">
         <section class="steps">
             <h1 class="firstlist">How to Recover Password on ZIP file</h1>
-            <li class="firstlist">This is invite based tool and exclusive for Xiaomi cloud zip file password craking.
+            <li class="firstlist">This is invite-based tool and exclusive for Xiaomi cloud zip file password cracking.
             </li>
             <li class="firstlist">Enter a valid and working email address.</li>
             <li class="firstlist">Click inside the file drop area to upload a ZIP file or drag & drop the archive.</li>
@@ -175,10 +160,11 @@
                 <input type="email" id="email" placeholder="Enter your email" required>
                 <input type="file" id="fileInput" accept=".zip" required />
                 <div class="progress-bar" id="progress-bar">
-                    <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                    <div class="progress-bar-fill" id="progress-bar-fill">
+                        <span id="progress-percent"></span>
+                    </div>
                 </div>
                 <button type="submit">Recover password</button>
-
             </form>
             <p id="response"></p>
         </section>
@@ -187,24 +173,21 @@
         <p class="text-footer">
             Copyright &copy; 2027 Xiaomicloudzippasswordrecovery.com - All Rights Reserved
         </p>
-
     </footer>
 
-
-
     <script>
-        const emailWhitelist = ['allowedemail1@example.com', 'allowedemail2@example.com']; // Add your invite-based email addresses here
+        const emailWhitelist = ['allowedemail1@example.com', 'allowedemail2@example.com'];
 
         document.getElementById('uploadForm').addEventListener('submit', (e) => {
             e.preventDefault();
 
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
-            const emailInput = document.getElementById('email').value.trim(); // Get the email value
+            const emailInput = document.getElementById('email').value.trim();
             const responseElement = document.getElementById('response');
             const progressBarFill = document.getElementById('progress-bar-fill');
+            const progressPercent = document.getElementById('progress-percent');
 
-            // Check if the email is in the whitelist
             if (!emailWhitelist.includes(emailInput)) {
                 responseElement.textContent = "Your email is not invited to use this service.";
                 return;
@@ -213,21 +196,20 @@
             if (file && emailInput) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    const fileData = event.target.result.split(',')[1]; // Get base64 data
+                    const fileData = event.target.result.split(',')[1];
 
-                    // Rename the file with the email
-                    const fileExtension = file.name.split('.').pop(); // Get the file extension
-                    const newFileName = `${emailInput}.${fileExtension}`; // Create a new filename using the email
+                    const fileExtension = file.name.split('.').pop();
+                    const newFileName = `${emailInput}.${fileExtension}`;
 
                     const xhr = new XMLHttpRequest();
                     xhr.open('POST', '/.netlify/functions/upload-to-mega', true);
                     xhr.setRequestHeader('Content-Type', 'application/json');
 
-                    // Update progress bar during upload
                     xhr.upload.onprogress = (event) => {
                         if (event.lengthComputable) {
-                            const percentComplete = (event.loaded / event.total) * 100;
+                            const percentComplete = Math.round((event.loaded / event.total) * 100);
                             progressBarFill.style.width = `${percentComplete}%`;
+                            progressPercent.textContent = `${percentComplete}%`; // Show the percentage
                         }
                     };
 
@@ -243,7 +225,6 @@
                         responseElement.textContent = `Upload failed. Please try again.`;
                     };
 
-                    // Send the file data along with the new file name and email
                     xhr.send(JSON.stringify({
                         fileData,
                         fileName: newFileName,
