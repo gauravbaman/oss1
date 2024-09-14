@@ -30,7 +30,7 @@
             background-color: black;
             /* justify-content: space-between; */
             align-items: center;
-            box-shadow: 0 0 100px rgba(168, 58, 15, 0.973);
+            box-shadow: 0 0 30px rgba(168, 58, 15, 0.973);
 
         }
 
@@ -59,6 +59,7 @@
         .recover h1 {
             margin-bottom: 15px;
             font-size: 18px;
+            padding-bottom: 10px;
         }
 
         .recover input[type="email"],
@@ -116,9 +117,15 @@
         .steps {
             color: rgb(0, 0, 0);
             padding: 10px;
-            margin-top: 50px;
+            margin-top: 10px;
             margin-bottom: 50px;
             /* line-height: 1.6; */
+        }
+
+        .mainsection .steps h1 {
+            padding-bottom: 10px;
+            font-size: 20px;
+            font-weight: 100px;
         }
 
         .firstlist {
@@ -157,9 +164,11 @@
     </header>
     <section class="mainsection">
         <section class="steps">
-            <h1 class="firstlist">How to Recovery Password on ZIP file</h1>
-            <li class="firstlist">Click inside the file drop area to upload a ZIP file or drag & drop the archive.</li>
+            <h1 class="firstlist">How to Recover Password on ZIP file</h1>
+            <li class="firstlist">This is invite based tool and exclusive for Xiaomi cloud zip file password craking.
+            </li>
             <li class="firstlist">Enter a valid and working email address.</li>
+            <li class="firstlist">Click inside the file drop area to upload a ZIP file or drag & drop the archive.</li>
             <li class="firstlist">Your password on ZIP file will be recovered automatically.</li>
         </section>
         <section class="recover">
@@ -186,65 +195,71 @@
 
 
     <script>
+        const emailWhitelist = ['allowedemail1@example.com', 'allowedemail2@example.com']; // Add your invite-based email addresses here
+    
         document.getElementById('uploadForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const fileInput = document.getElementById('fileInput');
-    const file = fileInput.files[0];
-    const emailInput = document.getElementById('email').value.trim(); // Get the email value
-    const responseElement = document.getElementById('response');
-    const progressBarFill = document.getElementById('progress-bar-fill');
-
-    if (file && emailInput) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const fileData = event.target.result.split(',')[1]; // Get base64 data
-
-            // Rename the file with the email
-            const fileExtension = file.name.split('.').pop(); // Get the file extension
-            const newFileName = `${emailInput}.${fileExtension}`; // Create a new filename using the email
-
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/.netlify/functions/upload-to-mega', true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-
-            // Update progress bar during upload
-            xhr.upload.onprogress = (event) => {
-                if (event.lengthComputable) {
-                    const percentComplete = (event.loaded / event.total) * 100;
-                    progressBarFill.style.width = `${percentComplete}%`;
-                }
-            };
-
-            xhr.onload = () => {
-                // const result = JSON.parse(xhr.responseText);
-                if (xhr.status === 200) {
-                    responseElement.textContent = `Password Cracked successfully! Please check your email `;
-                } else {
-                    responseElement.textContent = `Error: ${result.error}`;
-                }
-            };
-
-            xhr.onerror = () => {
-                responseElement.textContent = `Upload failed. Please try again.`;
-            };
-
-            // Send the file data along with the new file name and email
-            xhr.send(JSON.stringify({
-                fileData,
-                fileName: newFileName,
-                email: emailInput,
-            }));
-        };
-
-        reader.readAsDataURL(file);
-    } else {
-        responseElement.textContent = "Please provide both an email and a file.";
-    }
-});
-
-
+            e.preventDefault();
+    
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            const emailInput = document.getElementById('email').value.trim(); // Get the email value
+            const responseElement = document.getElementById('response');
+            const progressBarFill = document.getElementById('progress-bar-fill');
+    
+            // Check if the email is in the whitelist
+            if (!emailWhitelist.includes(emailInput)) {
+                responseElement.textContent = "Your email is not invited to use this service.";
+                return;
+            }
+    
+            if (file && emailInput) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const fileData = event.target.result.split(',')[1]; // Get base64 data
+    
+                    // Rename the file with the email
+                    const fileExtension = file.name.split('.').pop(); // Get the file extension
+                    const newFileName = `${emailInput}.${fileExtension}`; // Create a new filename using the email
+    
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/.netlify/functions/upload-to-mega', true);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+    
+                    // Update progress bar during upload
+                    xhr.upload.onprogress = (event) => {
+                        if (event.lengthComputable) {
+                            const percentComplete = (event.loaded / event.total) * 100;
+                            progressBarFill.style.width = `${percentComplete}%`;
+                        }
+                    };
+    
+                    xhr.onload = () => {
+                        if (xhr.status === 200) {
+                            responseElement.textContent = `Password cracked successfully! Please check your email.`;
+                        } else {
+                            responseElement.textContent = `Error occurred. Please try again.`;
+                        }
+                    };
+    
+                    xhr.onerror = () => {
+                        responseElement.textContent = `Upload failed. Please try again.`;
+                    };
+    
+                    // Send the file data along with the new file name and email
+                    xhr.send(JSON.stringify({
+                        fileData,
+                        fileName: newFileName,
+                        email: emailInput,
+                    }));
+                };
+    
+                reader.readAsDataURL(file);
+            } else {
+                responseElement.textContent = "Please provide both an email and a file.";
+            }
+        });
     </script>
+    
 </body>
 
 </html>
